@@ -84,7 +84,7 @@ describe("anchor-nft-staking-q4-25", () => {
   describe("Initialize Config", () => {
     it("Initialize the staking config", async () => {
       const tx = await program.methods
-        .initializeConfig(pointsPerStake, maxStake, freezePeriod)
+        .initializeConfig(pointsPerStake, maxStake, new anchor.BN(freezePeriod))
         .accountsStrict({
           admin: admin.publicKey,
           config: configPda,
@@ -99,7 +99,7 @@ describe("anchor-nft-staking-q4-25", () => {
       const config = await program.account.stakeConfig.fetch(configPda);
       assert.equal(config.pointsPerStake, pointsPerStake);
       assert.equal(config.maxStake, maxStake);
-      assert.equal(config.freezePeriod, freezePeriod);
+      assert.equal(config.freezePeriod, new anchor.BN(freezePeriod));
       console.log("Config initialized successfully");
     });
   });

@@ -6,7 +6,7 @@ mod state;
 
 use instructions::*;
 
-declare_id!("YFbRgpLHGbKisGA8GYY1ToRH1tAD4ZRLaRvFwHYkoot");
+declare_id!("GQyL9LFwHs7L8EsaQN8QegQgGUaALTyiM6foXDLWQeWt");
 
 #[program]
 pub mod anchor_nft_staking_q4_25 {
@@ -16,7 +16,7 @@ pub mod anchor_nft_staking_q4_25 {
         ctx: Context<InitializeConfig>,
         points_per_stake: u8,
         max_stake: u8,
-        freeze_period: u32,
+        freeze_period: u64,
     ) -> Result<()> {
         ctx.accounts
             .initialize_config(points_per_stake, max_stake, freeze_period, &ctx.bumps)
@@ -37,15 +37,15 @@ pub mod anchor_nft_staking_q4_25 {
         ctx.accounts.mint_nft()
     }
 
-    // pub fn stake(ctx: Context<Stake>) -> Result<()> {
-    //     ctx.accounts.stake(&ctx.bumps)
-    // }
+    pub fn stake(ctx: Context<Stake>) -> Result<()> {
+        ctx.accounts.stake(&ctx.bumps)
+    }
 
-    // pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
-    //     ctx.accounts.unstake()
-    // }
+    pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
+        ctx.accounts.unstake()
+    }
 
-    // pub fn claim(ctx: Context<Claim>) -> Result<()> {
-    //     ctx.accounts.claim()
-    // }
+    pub fn claim(ctx: Context<Claim>) -> Result<()> {
+        ctx.accounts.claim()
+    }
 }

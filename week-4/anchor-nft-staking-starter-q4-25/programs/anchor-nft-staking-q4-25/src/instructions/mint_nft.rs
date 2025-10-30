@@ -28,7 +28,7 @@ pub struct MintNft<'info> {
 
     #[account(
         seeds = [b"collection_info", collection.key().as_ref()],
-        bump = collection_info.bump,
+        bump = collection_info.bump
     )]
     pub collection_info: Account<'info, CollectionInfo>,
 

@@ -36,7 +36,7 @@ impl<'info> InitializeConfig<'info> {
         &mut self,
         points_per_stake: u8,
         max_stake: u8,
-        freeze_period: u32,
+        freeze_period: u64,
         bumps: &InitializeConfigBumps,
     ) -> Result<()> {
         self.config.set_inner(StakeConfig {
