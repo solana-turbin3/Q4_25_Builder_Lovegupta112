@@ -1,0 +1,13 @@
+use anchor_lang::prelude::*;
+
+#[account]
+#[derive(InitSpace)]
+pub struct StakeAccount {
+    pub owner:Pubkey,
+    pub mint:Pubkey,
+    pub amount_staked:u64,
+    pub total_yield:u64,
+    pub staked_at:u64,
+    pub last_updated_yield:u64,   
+     pub bump:u8
+}
