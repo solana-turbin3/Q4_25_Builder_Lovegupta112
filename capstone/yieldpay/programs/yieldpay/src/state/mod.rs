@@ -14,3 +14,6 @@ pub use vault::*;
 
 mod merchant_account;
 pub use merchant_account::*;
+
+mod whitelist_token;
+pub use whitelist_token::*;

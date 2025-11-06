@@ -1,9 +1,8 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, TokenAccount};
+use anchor_spl::token::{Mint, Token};
 
 use crate::{
-    errors::YieldpayError,
-    state::{Config, CONFIG_SEED},
+    state::{Config, CONFIG_SEED,YIELD_MINT_SEED},
 };
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
@@ -30,9 +29,17 @@ pub struct InitializeConfigContext<'info> {
   )]
     pub config: Account<'info, Config>,
 
-    #[account()]
+    #[account(
+        init,
+        payer=admin,
+        seeds=[YIELD_MINT_SEED.as_ref(),config.key().as_ref()],
+        bump,
+        mint::decimals=6,
+        mint::authority=config
+    )]
     pub yield_mint:Account<'info,Mint>,
-
+ 
+    pub token_program:Program<'info,Token>,
     pub system_program: Program<'info, System>,
 }
 
@@ -43,16 +50,18 @@ impl<'info> InitializeConfigContext<'info> {
         bumps: &InitializeConfigContextBumps,
     ) -> Result<()> {
         self.config.set_inner(Config {
+            admin:self.admin.key(),
             max_stake: args.max_stake,
             min_deposit: args.min_deposit,
             total_users: args.total_users,
             total_merchants: args.total_merchants,
             yield_min_period: args.yield_min_period,
             apy_bps: args.apy_bps,
-            bump: bumps.config,
-            yield_mint:self.yield_mint.key()
+            config_bump: bumps.config,
+            yield_bump:bumps.yield_mint,
+            yield_mint:self.yield_mint.key(),
         });
-        msg!("successfully initialize_config");
+        msg!("config is initialized successfully.");
         Ok(())
     }
 }

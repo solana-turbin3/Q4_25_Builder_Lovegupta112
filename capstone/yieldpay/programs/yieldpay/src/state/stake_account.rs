@@ -8,6 +8,6 @@ pub struct StakeAccount {
     pub amount_staked:u64,
     pub total_yield:u64,
     pub staked_at:u64,
-    pub last_updated_yield:u64,   
+    pub last_yield_mint:u64,   
      pub bump:u8
 }

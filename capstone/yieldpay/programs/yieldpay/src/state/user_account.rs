@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+pub const USER_SEED: &str = "USER";
+
 #[account]
 #[derive(InitSpace)]
 pub struct UserAccount {

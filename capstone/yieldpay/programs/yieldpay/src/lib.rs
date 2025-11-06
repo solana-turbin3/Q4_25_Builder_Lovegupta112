@@ -19,6 +19,20 @@ pub mod yieldpay {
         ctx.accounts.initialize_config(args, &ctx.bumps)
     }
 
-    // pub fn onboard_user() -> Result<()> {}
-    // pub fn onboard_merchant() -> Result<()> {}
+    //whitelisting token and create vault for that token mint ------------
+    pub fn whitelist_token(ctx: Context<WhitelistTokenContext>) -> Result<()> {
+        ctx.accounts.whitelist_token(&ctx.bumps)
+    }
+    
+    //onboarding user and merchant ----------
+    pub fn onboard_user(ctx:Context<InitializeUserContext>) -> Result<()> {
+      ctx.accounts.initialize_user(&ctx.bumps)
+    }
+
+    pub fn onboard_merchant(ctx:Context<InitializeMerchantContext>,business_name:String) -> Result<()> {
+     ctx.accounts.initialize_merchant(business_name,&ctx.bumps)
+    }
+
+
+    //staking or depost token --------
 }

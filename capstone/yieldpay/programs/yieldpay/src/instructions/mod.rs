@@ -19,4 +19,7 @@ pub use unstake::*;
 pub mod update_yield;
 pub use update_yield::*;
 
+pub mod whitelist_token;
+pub use whitelist_token::*;
+
 
