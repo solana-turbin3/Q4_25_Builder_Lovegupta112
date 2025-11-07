@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::{errors::YieldpayError};
 
-pub const WHITELIST_SEED: &str = "WHITELIST";
+pub const WHITELIST_SEED: &[u8] = b"WHITELIST";
 
 #[account]
 #[derive(InitSpace)]

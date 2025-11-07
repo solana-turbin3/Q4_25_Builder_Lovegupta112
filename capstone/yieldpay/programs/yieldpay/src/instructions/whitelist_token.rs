@@ -31,15 +31,15 @@ pub struct WhitelistTokenContext<'info> {
         seeds=[VAULT_SEED.as_ref(),mint_x.key().as_ref(),config.key().as_ref()],
         bump
     )]
-    pub vault: Account<'info, Vault>,
+    pub vault_x: Account<'info, Vault>,
 
     #[account(
         init,
         payer=admin,
         associated_token::mint=mint_x,
-        associated_token::authority=vault
+        associated_token::authority=vault_x
     )]
-    pub vault_x: Account<'info, TokenAccount>,
+    pub vault_x_ata: Account<'info, TokenAccount>,
 
     #[account(
         constraint = config.admin == admin.key() @ YieldpayError::UnauthorizedAccess,
@@ -61,11 +61,11 @@ impl<'info> WhitelistTokenContext<'info> {
         }
         self.whitelisted_tokens.whitelist_mint(&self.mint_x.key())?;
 
-        self.vault.set_inner(Vault {
+        self.vault_x.set_inner(Vault {
             mint: self.mint_x.key(),
-            token_account: self.vault_x.key(),
+            token_account: self.vault_x_ata.key(),
             total_amount_staked: 0,
-            bump: bumps.vault,
+            bump: bumps.vault_x,
         });
         msg!("Vault created successfully for mint: {}", self.mint_x.key());
         Ok(())

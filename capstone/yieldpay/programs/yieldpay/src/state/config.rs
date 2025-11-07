@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
-pub const CONFIG_SEED: &str = "CONFIG";
-pub const YIELD_MINT_SEED: &str = "YIELD";
+pub const CONFIG_SEED: &[u8] = b"CONFIG";
+pub const YIELD_MINT_SEED: &[u8] = b"YIELD";
 
 #[account]
 #[derive(InitSpace)]

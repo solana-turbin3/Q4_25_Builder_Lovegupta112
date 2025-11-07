@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-pub const USER_SEED: &str = "USER";
+pub const USER_SEED: &[u8] = b"USER";
 
 #[account]
 #[derive(InitSpace)]

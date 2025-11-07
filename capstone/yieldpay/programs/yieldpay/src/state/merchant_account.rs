@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-pub const MERCHANT_SEED: &str = "MERCHANT";
+pub const MERCHANT_SEED: &[u8] = b"MERCHANT";
 
 #[account]
 #[derive(InitSpace)]

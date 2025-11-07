@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-pub const VAULT_SEED: &str = "VAULT";
+pub const VAULT_SEED: &[u8] = b"VAULT";
 
 #[account]
 #[derive(InitSpace)]
