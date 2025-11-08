@@ -7,24 +7,22 @@ import {
   getAssociatedTokenAddressSync,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, SystemProgram } from "@solana/web3.js";
 import { expect } from "chai";
 
 describe("yieldpay", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
- const connection=provider.connection;
+  const connection = provider.connection;
   const program = anchor.workspace.yieldpay as Program<Yieldpay>;
-
-  //TODO:  define everthing firstly -----------
 
   const admin = provider.wallet;
   const user = anchor.web3.Keypair.generate();
   const merchant = anchor.web3.Keypair.generate();
 
-  let userAccount: anchor.web3.PublicKey;
-  let merchantAccount: anchor.web3.PublicKey;
+  let userAccountPda: anchor.web3.PublicKey;
+  let merchantAccountPda: anchor.web3.PublicKey;
   let configPda: anchor.web3.PublicKey;
   let configBump: number;
   let yieldMint: anchor.web3.PublicKey;
@@ -45,11 +43,14 @@ describe("yieldpay", () => {
   let total_merchants = new anchor.BN(0);
   let yield_min_period = new anchor.BN(2); //days
   let apy_bps = 10;
+  const busineesNameA = "Merchant A private ltd";
 
   const CONFIG_SEED = "CONFIG";
   const YIELD_MINT_SEED = "YIELD";
   const WHITELIST_SEED = "WHITELIST";
   const VAULT_SEED = "VAULT";
+  const USER_SEED = "USER";
+  const MERCHANT_SEED = "MERCHANT";
 
   console.log("-------------------------------\n");
   console.log("Admin pubkey: ", admin.publicKey.toString());
@@ -110,9 +111,9 @@ describe("yieldpay", () => {
     //creating mint that will be whitelisted by admin ---
     mintX = await createMint(connection, admin.payer, admin.publicKey, null, 0);
 
-    console.log("mintX: ",mintX.toString());
+    console.log("mintX: ", mintX.toString());
 
-    [vaultXPda, vaultBump] = PublicKey.findProgramAddressSync(
+    [vaultXPda, vaultXBump] = PublicKey.findProgramAddressSync(
       [Buffer.from(VAULT_SEED), mintX.toBuffer(), configPda.toBuffer()],
       program.programId
     );
@@ -120,13 +121,39 @@ describe("yieldpay", () => {
     vaultXAta = getAssociatedTokenAddressSync(mintX, vaultXPda, true);
 
     console.log(
-      `vaultPda: ${vaultXPda.toString()} , vaultBump: ${vaultBump} and its associated vaultX: ${vaultXAta.toString()}`
+      `vaultXPda: ${vaultXPda.toString()} , vaultXBump: ${vaultXBump} and its associated vaultX: ${vaultXAta.toString()}`
+    );
+    //creating mint that will be whitelisted by user ---
+    mintY = await createMint(connection, user, user.publicKey, null, 0);
+    console.log("mintY: ", mintY.toString());
+
+    [vaultYPda, vaultYBump] = PublicKey.findProgramAddressSync(
+      [Buffer.from(VAULT_SEED), mintY.toBuffer(), configPda.toBuffer()],
+      program.programId
+    );
+
+    vaultYAta = getAssociatedTokenAddressSync(mintY, vaultYPda, true);
+
+    console.log(
+      `vaultYPda: ${vaultYPda.toString()} , vaultYBump: ${vaultYBump} and its associated vaultY: ${vaultYAta.toString()}`
+    );
+
+    [userAccountPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(USER_SEED), user.publicKey.toBuffer()],
+      program.programId
+    );
+    [merchantAccountPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(MERCHANT_SEED), merchant.publicKey.toBuffer()],
+      program.programId
+    );
+
+    console.log(
+      `userAccount: ${userAccountPda.toString()} , merchantAccount: ${merchantAccountPda.toString()}`
     );
 
     console.log("-------------------------------\n");
-
   });
-  
+
   it("config is initialized!", async () => {
     const tx = await program.methods
       .initialize({
@@ -186,14 +213,16 @@ describe("yieldpay", () => {
     const whitelistTokenAccount = await program.account.whitelistToken.fetch(
       whitelistedTokenPda
     );
-    const vaultXPdaAccount= await program.account.vault.fetch(vaultXPda);
+    const vaultXPdaAccount = await program.account.vault.fetch(vaultXPda);
 
-    //todo: check vault state too ----
-    expect(whitelistTokenAccount.tokens.find((key)=>key.equals(mintX))).to.not.be.undefined;
+    expect(whitelistTokenAccount.tokens.find((key) => key.equals(mintX))).to.not
+      .be.undefined;
     expect(whitelistTokenAccount.supportedTokenNum).to.equal(1);
     expect(whitelistTokenAccount.bump).to.equal(whitelistedTokenBump);
     expect(vaultXPdaAccount.mint.toBase58()).to.equal(mintX.toBase58());
-    expect(vaultXPdaAccount.tokenAccount.toBase58()).to.equal(vaultXAta.toBase58());
+    expect(vaultXPdaAccount.tokenAccount.toBase58()).to.equal(
+      vaultXAta.toBase58()
+    );
   });
   it("User can't whitelist the token X", async () => {
     try {
@@ -201,10 +230,10 @@ describe("yieldpay", () => {
         .whitelistToken()
         .accountsStrict({
           admin: user.publicKey,
-          mintX: mintX,
+          mintX: mintY,
           whitelistedTokens: whitelistedTokenPda,
-          vaultX: vaultXPda,
-          vaultXAta: vaultXAta,
+          vaultX: vaultYPda,
+          vaultXAta: vaultYAta,
           config: configPda,
           tokenProgram: TOKEN_PROGRAM_ID,
           systemProgram: anchor.web3.SystemProgram.programId,
@@ -213,13 +242,56 @@ describe("yieldpay", () => {
         .signers([user])
         .rpc();
 
-      expect.fail("User was trying to whitelist the token X");
+      expect.fail("User was trying to whitelist the token Y");
     } catch (err) {
-      // expect(err.error.errorMessage).to.equal("UnauthorizedAccess");
-      console.log("207...", err?.toString());
+      expect(err.error.errorMessage).to.equal("Unauthorized access: this account is not the owner or authorized authority.");
     }
   });
 
-  // it("Onboards the User", async () => {});
-  // it("Onboards the Merchant", async () => {});
+  it("Onboards the User", async () => {
+    const tx = await program.methods
+      .onboardUser()
+      .accountsStrict({
+        user: user.publicKey,
+        userAccount: userAccountPda,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([user])
+      .rpc();
+
+    console.log("Onboard User's transaction signature", tx);
+
+    const userAccountInfo = await program.account.userAccount.fetch(
+      userAccountPda
+    );
+
+    expect(userAccountInfo.totalAmountStaked.toNumber()).to.equal(0);
+    expect(userAccountInfo.totalYield.toNumber()).to.equal(0);
+    expect(userAccountInfo.owner.toBase58()).to.equal(
+      user.publicKey.toBase58()
+    );
+  });
+  it("Onboards the Merchant", async () => {
+    const tx = await program.methods
+      .onboardMerchant(busineesNameA)
+      .accountsStrict({
+        merchant: merchant.publicKey,
+        merchantAccount: merchantAccountPda,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([merchant])
+      .rpc();
+
+    console.log("Onboard Merchant's transaction signature", tx);
+
+    const merchantAccountInfo = await program.account.merchantAccount.fetch(
+      merchantAccountPda
+    );
+
+    expect(merchantAccountInfo.businessName).to.equal(busineesNameA);
+    expect(merchantAccountInfo.totalReceived.toNumber()).to.equal(0);
+    expect(merchantAccountInfo.owner.toBase58()).to.equal(
+      merchant.publicKey.toBase58()
+    );
+  });
 });
