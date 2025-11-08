@@ -26,6 +26,7 @@ impl<'info> InitializeMerchantContext<'info> {
             total_received:0,
             bump:bumps.merchant_account,
         });
+        //todo: increase merchant inconfig -----also check in tests state of config
 
         msg!("Merchant {} onboarderd successfully.", self.merchant.key());
 

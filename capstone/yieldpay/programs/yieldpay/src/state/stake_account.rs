@@ -1,5 +1,8 @@
 use anchor_lang::prelude::*;
 
+pub const STAKE_SEED: &[u8] = b"STAKE";
+
+
 #[account]
 #[derive(InitSpace)]
 pub struct StakeAccount {

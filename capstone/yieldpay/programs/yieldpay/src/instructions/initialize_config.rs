@@ -8,7 +8,7 @@ use crate::{
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct InitializeConfigArgs {
     pub max_stake: u64,
-    pub min_deposit: u8,
+    pub min_deposit: u64,
     pub total_users: u64,
     pub total_merchants: u64,
     pub yield_min_period: u64,

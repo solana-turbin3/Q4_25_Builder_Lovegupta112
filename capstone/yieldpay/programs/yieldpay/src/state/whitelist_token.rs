@@ -12,13 +12,18 @@ pub struct WhitelistToken {
 }
 impl WhitelistToken{
 
+    pub fn is_token_whitelisted(&self,mint:&Pubkey)->bool{
+        self.tokens.contains(mint)
+    }
+
+
     pub fn whitelist_mint(&mut self,mint:&Pubkey)->Result<()>{
 
         if self.supported_token_num as usize >= self.tokens.len() {
             return err!(YieldpayError::TokenListFull);
         }
 
-        if self.tokens.contains(&mint) {
+        if self.is_token_whitelisted(&mint) {
            return err!(YieldpayError::TokenAlreadyWhitelisted);
         }
 

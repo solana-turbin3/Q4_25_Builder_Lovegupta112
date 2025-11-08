@@ -20,6 +20,7 @@ pub struct InitializeUserContext<'info> {
 
 impl<'info> InitializeUserContext<'info> {
     pub fn initialize_user(&mut self, bumps: &InitializeUserContextBumps) -> Result<()> {
+        
         self.user_account.set_inner(UserAccount {
             owner: self.user.key(),
             total_yield: 0,
@@ -27,6 +28,7 @@ impl<'info> InitializeUserContext<'info> {
             bump: bumps.user_account,
         });
 
+        //todo: increase user inconfig -----also check in tests state of config
         msg!("User {} onboarderd successfully.", self.user.key());
 
         Ok(())

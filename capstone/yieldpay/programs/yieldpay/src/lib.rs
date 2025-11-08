@@ -34,5 +34,12 @@ pub mod yieldpay {
     }
 
 
-    //staking or depost token --------
+    //staking or deposit token --------
+
+    pub fn stake(ctx:Context<StakeAccountContext>,amount:u64)->Result<()>{
+        ctx.accounts.stake(amount, &ctx.bumps)
+    }
+    // pub fn unstake(ctx:Context<>,amount:u64)->Result<()>{
+    //     Ok(())
+    // }
 }

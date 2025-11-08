@@ -41,7 +41,7 @@ describe("yieldpay", () => {
   let min_deposit = 1;
   let total_users = new anchor.BN(0);
   let total_merchants = new anchor.BN(0);
-  let yield_min_period = new anchor.BN(2); //days
+  let yield_min_period = new anchor.BN(1*24*60*60); //1 day
   let apy_bps = 10;
   const busineesNameA = "Merchant A private ltd";
 

@@ -26,6 +26,9 @@ pub enum YieldpayError {
     #[msg("Token is alreday whitelisted")]
     TokenAlreadyWhitelisted,
 
+    #[msg("Token is not whitelisted")]
+    TokenNotWhitelisted,
+
     #[msg("Already Initialized")]
     AlreadyInitialized,
 }
