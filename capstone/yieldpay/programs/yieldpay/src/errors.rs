@@ -19,7 +19,7 @@ pub enum YieldpayError {
 
     #[msg("Invalid payment amount: must be greater than zero and within limits.")]
     InvalidPaymentAmount,
-    
+
     #[msg("Token List is full")]
     TokenListFull,
 
@@ -31,4 +31,10 @@ pub enum YieldpayError {
 
     #[msg("Already Initialized")]
     AlreadyInitialized,
+
+    #[msg("Amount Overflow detected")]
+    Overflow,
+
+    #[msg("Amount Underflow detected")]
+    Underflow,
 }

@@ -38,11 +38,11 @@ describe("yieldpay", () => {
   let vaultYAta: anchor.web3.PublicKey;
   let mintY: anchor.web3.PublicKey;
   let max_stake = new anchor.BN(10);
-  let min_deposit = 1;
+  let min_deposit = new anchor.BN(10);
   let total_users = new anchor.BN(0);
   let total_merchants = new anchor.BN(0);
-  let yield_min_period = new anchor.BN(1*24*60*60); //1 day
-  let apy_bps = 10;
+  let yield_min_period = new anchor.BN(1 * 24 * 60 * 60); //1 day
+  let apy_bps = new anchor.BN(700);
   const busineesNameA = "Merchant A private ltd";
 
   const CONFIG_SEED = "CONFIG";
@@ -187,7 +187,9 @@ describe("yieldpay", () => {
       total_merchants.toString()
     );
     expect(configAccount.maxStake.toString()).to.equal(max_stake.toString());
-    expect(configAccount.minDeposit).to.equal(min_deposit);
+    expect(configAccount.minDeposit.toNumber()).to.equal(
+      min_deposit.toNumber()
+    );
     expect(configAccount.yieldMinPeriod.toString()).to.equal(
       yield_min_period.toString()
     );
@@ -244,7 +246,9 @@ describe("yieldpay", () => {
 
       expect.fail("User was trying to whitelist the token Y");
     } catch (err) {
-      expect(err.error.errorMessage).to.equal("Unauthorized access: this account is not the owner or authorized authority.");
+      expect(err.error.errorMessage).to.equal(
+        "Unauthorized access: this account is not the owner or authorized authority."
+      );
     }
   });
 
@@ -287,7 +291,7 @@ describe("yieldpay", () => {
     const merchantAccountInfo = await program.account.merchantAccount.fetch(
       merchantAccountPda
     );
-
+    //todo: increase merchant inconfig -----also check in tests state of config
     expect(merchantAccountInfo.businessName).to.equal(busineesNameA);
     expect(merchantAccountInfo.totalReceived.toNumber()).to.equal(0);
     expect(merchantAccountInfo.owner.toBase58()).to.equal(

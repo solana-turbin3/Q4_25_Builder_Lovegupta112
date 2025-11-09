@@ -12,7 +12,7 @@ pub struct InitializeConfigArgs {
     pub total_users: u64,
     pub total_merchants: u64,
     pub yield_min_period: u64,
-    pub apy_bps: u8,
+    pub apy_bps: u64,
 }
 
 #[derive(Accounts)]

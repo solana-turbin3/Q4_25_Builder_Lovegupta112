@@ -16,8 +16,8 @@ pub use stake::*;
 pub mod unstake;
 pub use unstake::*;
 
-pub mod update_yield;
-pub use update_yield::*;
+pub mod claim_yield;
+pub use claim_yield::*;
 
 pub mod whitelist_token;
 pub use whitelist_token::*;
