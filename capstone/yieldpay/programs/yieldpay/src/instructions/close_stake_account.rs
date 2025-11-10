@@ -13,7 +13,7 @@ use crate::{
 };
 
 #[derive(Accounts)]
-pub struct UnstakeContext<'info> {
+pub struct CloseStakeAccountContext<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
 
@@ -45,7 +45,8 @@ pub struct UnstakeContext<'info> {
     #[account(
     mut,
     seeds=[STAKE_SEED.as_ref(),config.key().as_ref(),mint_x.key().as_ref(),user_account.key().as_ref()],
-    bump=stake_account.bump
+    bump=stake_account.bump,
+    close=user
 )]
     pub stake_account: Account<'info, StakeAccount>,
 
@@ -85,41 +86,14 @@ pub struct UnstakeContext<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
-impl<'info> UnstakeContext<'info> {
-    pub fn unstake(&mut self, amount: u64) -> Result<()> {
+impl <'info>  CloseStakeAccountContext <'info>{
 
-        require!(amount<=self.stake_account.amount_staked,YieldpayError::InvalidAmount);
-        require!(amount>0,YieldpayError::InvalidAmount);
-
-        require!(self.stake_account.is_active==true,YieldpayError::StakeAccountInactive);
-        require!(self.stake_account.amount_staked>0,YieldpayError::NoActiveStake);
-
-        if amount == self.stake_account.amount_staked {
-            self.stake_account.last_yield_mint=0;
-            self.stake_account.is_active=false;
-        }
-
-        let program_id=self.token_program.to_account_info();
-
-        let cpi_accounts=Transfer{
-            from:self.vault_x_ata.to_account_info(),
-            to:self.user_x_ata.to_account_info(),
-            authority:self.vault_x.to_account_info()
-        };
-
-        let signer_seeds: &[&[&[u8]]]=&[&[VAULT_SEED.as_ref(),self.mint_x.to_account_info().key.as_ref(),self.config.to_account_info().key.as_ref(),&[self.vault_x.bump]]];
-
-        let cpi_ctx=CpiContext::new_with_signer(program_id, cpi_accounts, signer_seeds);
-
-
-        transfer(cpi_ctx,amount)?;
-
-        self.stake_account.amount_staked=self.stake_account.amount_staked.checked_sub(amount)
-        .ok_or(YieldpayError::Underflow)?;
-
-        self.user_account.total_amount_staked=self.user_account.total_amount_staked.checked_sub(amount)
-        .ok_or(YieldpayError::Underflow)?;
-
+    pub fn close_stake_account(&mut self)->Result<()>{
+       
+        require!(self.stake_account.amount_staked==0,YieldpayError::MustUnstakeFirst);
+        require!(self.stake_account.is_active==false,YieldpayError::StakeAccountStillActive);
+    
+         self.stake_account.close(self.user.to_account_info())?;
         Ok(())
     }
 }

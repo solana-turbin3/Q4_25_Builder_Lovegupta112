@@ -22,4 +22,7 @@ pub use claim_yield::*;
 pub mod whitelist_token;
 pub use whitelist_token::*;
 
+pub mod close_stake_account;
+pub use close_stake_account::*;
+
 

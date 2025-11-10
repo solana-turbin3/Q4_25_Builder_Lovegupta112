@@ -47,9 +47,11 @@ pub mod yieldpay {
         ctx.accounts.pay_merchant(amount)
     }
 
-    // pub fn unstake(ctx:Context<>,amount:u64)->Result<()>{
-    //     Ok(())
-    // }
+    pub fn unstake(ctx:Context<UnstakeContext>,amount:u64)->Result<()>{
+        ctx.accounts.unstake(amount)
+    }
+    pub fn close_stake_account(ctx:Context<CloseStakeAccountContext>)->Result<()>{
+        ctx.accounts.close_stake_account()
+    }
 
-    //TODO: add close account instructions
 }

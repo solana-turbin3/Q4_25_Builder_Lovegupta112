@@ -32,6 +32,7 @@ impl<'info> InitializeUserContext<'info> {
             total_amount_staked: 0,
             total_yield_spent:0,
             bump: bumps.user_account,
+            created_at:Clock::get()?.unix_timestamp as u64
         });
 
         //todo: increase user inconfig -----also check in tests state of config

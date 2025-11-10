@@ -86,10 +86,10 @@ pub struct PayMerchantContext<'info> {
 
 impl<'info> PayMerchantContext<'info> {
     pub fn pay_merchant(&mut self, amount: u64) -> Result<()> {
-        require!(amount > 0, YieldpayError::InvalidPaymentAmount);
+        require!(amount > 0, YieldpayError::InvalidAmount);
         require!(
             self.yield_mint_user_ata.amount >= amount,
-            YieldpayError::InvalidPaymentAmount
+            YieldpayError::InsufficientFunds
         );
 
         let cpi_accounts = Transfer {
@@ -129,12 +129,11 @@ impl<'info> PayMerchantContext<'info> {
             .ok_or(YieldpayError::Underflow)?;
 
         // for user_account level ---
-
-        self.user_account.total_yield = self
-            .user_account
-            .total_yield
-            .checked_sub(amount)
-            .ok_or(YieldpayError::Underflow)?;
+        // self.user_account.total_yield = self
+        //     .user_account
+        //     .total_yield
+        //     .checked_sub(amount)
+        //     .ok_or(YieldpayError::Underflow)?;
 
         self.user_account.total_yield_spent = self
             .user_account

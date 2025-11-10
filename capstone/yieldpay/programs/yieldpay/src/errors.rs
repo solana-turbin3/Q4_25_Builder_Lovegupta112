@@ -17,8 +17,8 @@ pub enum YieldpayError {
     #[msg("Minimum yield period has not yet elapsed.")]
     MinPeriodNotMet,
 
-    #[msg("Invalid payment amount: must be greater than zero and within limits.")]
-    InvalidPaymentAmount,
+    #[msg("Invalid amount: must be greater than zero and within limits.")]
+    InvalidAmount,
 
     #[msg("Token List is full")]
     TokenListFull,
@@ -37,4 +37,16 @@ pub enum YieldpayError {
 
     #[msg("Amount Underflow detected")]
     Underflow,
+
+    #[msg("Stake account is not active")]
+    StakeAccountInactive,
+
+    #[msg("Stake account is still active")]
+    StakeAccountStillActive,
+
+    #[msg("No active stake found for this mint")]
+    NoActiveStake,
+
+    #[msg("User must unstake total stake amount.")]
+    MustUnstakeFirst
 }

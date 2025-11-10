@@ -5,9 +5,10 @@ pub const MERCHANT_SEED: &[u8] = b"MERCHANT";
 #[account]
 #[derive(InitSpace)]
 pub struct MerchantAccount {
-    pub owner:Pubkey,
+    pub owner: Pubkey,
     #[max_len(32)]
-    pub business_name:String,
-    pub total_received:u64,
-    pub bump:u8
+    pub business_name: String,
+    pub total_received: u64,
+    pub created_at: u64,
+    pub bump: u8,
 }

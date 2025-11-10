@@ -57,6 +57,7 @@ impl<'info> InitializeMerchantContext<'info> {
             business_name,
             total_received: 0,
             bump: bumps.merchant_account,
+            created_at: Clock::get()?.unix_timestamp as u64,
         });
         self.config.total_merchants += 1;
         msg!("Merchant {} onboarderd successfully.", self.merchant.key());

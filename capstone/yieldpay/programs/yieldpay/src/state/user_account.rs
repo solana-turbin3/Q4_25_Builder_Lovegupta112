@@ -9,6 +9,7 @@ pub struct UserAccount {
     pub total_yield:u64,
     pub total_amount_staked:u64,
     pub total_yield_spent: u64, 
+    pub created_at:u64,
     pub bump:u8
 }
 

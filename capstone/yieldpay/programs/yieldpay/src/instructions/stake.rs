@@ -46,7 +46,7 @@ pub struct StakeAccountContext<'info> {
     init_if_needed,
     payer=user,
     space=StakeAccount::DISCRIMINATOR.len()+StakeAccount::INIT_SPACE,
-    seeds=[STAKE_SEED.as_ref(),config.key().as_ref(),mint_x.key().as_ref(),user.key().as_ref()],
+    seeds=[STAKE_SEED.as_ref(),config.key().as_ref(),mint_x.key().as_ref(),user_account.key().as_ref()],
     bump
 )]
     pub stake_account: Account<'info, StakeAccount>,
@@ -145,6 +145,7 @@ impl<'info> StakeAccountContext<'info> {
     ) -> Result<()> {
         if self.stake_account.amount_staked == 0 {
             self.stake_account.set_inner(StakeAccount {
+                is_active:true,
                 owner: self.user_account.key(),
                 mint: self.mint_x.key(),
                 amount_staked: amount,

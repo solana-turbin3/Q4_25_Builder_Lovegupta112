@@ -37,7 +37,7 @@ pub struct ClaimYieldAccountContext<'info> {
 
     #[account(
     mut,
-    seeds=[STAKE_SEED.as_ref(),config.key().as_ref(),mint_x.key().as_ref(),user.key().as_ref()],
+    seeds=[STAKE_SEED.as_ref(),config.key().as_ref(),mint_x.key().as_ref(),user_account.key().as_ref()],
     bump=stake_account.bump
 )]
     pub stake_account: Account<'info, StakeAccount>,
@@ -69,6 +69,10 @@ pub struct ClaimYieldAccountContext<'info> {
 
 impl<'info> ClaimYieldAccountContext<'info> {
     pub fn claim_yield(&mut self) -> Result<()> {
+
+        require!(self.stake_account.amount_staked>0,YieldpayError::NoActiveStake);
+        require!(self.stake_account.is_active==true,YieldpayError::StakeAccountInactive);
+
         let current_time = Clock::get()?.unix_timestamp as u64;
         let time_elapsed;
         if self.stake_account.last_yield_mint == 0 {
