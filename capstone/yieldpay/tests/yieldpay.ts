@@ -27,6 +27,8 @@ describe("yieldpay", () => {
   let configBump: number;
   let yieldMint: anchor.web3.PublicKey;
   let yieldMintBump: number;
+  let yieldMintUserAta: anchor.web3.PublicKey;
+  let yieldMintMerchantAta: anchor.web3.PublicKey;
   let whitelistedTokenPda: anchor.web3.PublicKey;
   let whitelistedTokenBump: number;
   let vaultXPda: anchor.web3.PublicKey;
@@ -80,6 +82,7 @@ describe("yieldpay", () => {
       10 * anchor.web3.LAMPORTS_PER_SOL
     );
 
+
     [configPda, configBump] = PublicKey.findProgramAddressSync(
       [Buffer.from(CONFIG_SEED)],
       program.programId
@@ -87,6 +90,19 @@ describe("yieldpay", () => {
 
     console.log(
       `ConfigPda: ${configPda.toString()} and configBump: ${configBump}`
+    );
+
+       [userAccountPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(USER_SEED), user.publicKey.toBuffer()],
+      program.programId
+    );
+    [merchantAccountPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(MERCHANT_SEED), merchant.publicKey.toBuffer()],
+      program.programId
+    );
+
+    console.log(
+      `userAccount: ${userAccountPda.toString()} , merchantAccount: ${merchantAccountPda.toString()}`
     );
 
     [yieldMint, yieldMintBump] = PublicKey.findProgramAddressSync(
@@ -98,6 +114,10 @@ describe("yieldpay", () => {
       `yieldMint: ${yieldMint.toString()} and yieldMintBump: ${yieldMintBump}`
     );
 
+    yieldMintUserAta=getAssociatedTokenAddressSync(yieldMint,userAccountPda,true);
+    yieldMintMerchantAta=getAssociatedTokenAddressSync(yieldMint,merchantAccountPda,true);
+
+    
     [whitelistedTokenPda, whitelistedTokenBump] =
       PublicKey.findProgramAddressSync(
         [Buffer.from(WHITELIST_SEED), configPda.toBuffer()],
@@ -138,18 +158,7 @@ describe("yieldpay", () => {
       `vaultYPda: ${vaultYPda.toString()} , vaultYBump: ${vaultYBump} and its associated vaultY: ${vaultYAta.toString()}`
     );
 
-    [userAccountPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from(USER_SEED), user.publicKey.toBuffer()],
-      program.programId
-    );
-    [merchantAccountPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from(MERCHANT_SEED), merchant.publicKey.toBuffer()],
-      program.programId
-    );
-
-    console.log(
-      `userAccount: ${userAccountPda.toString()} , merchantAccount: ${merchantAccountPda.toString()}`
-    );
+ 
 
     console.log("-------------------------------\n");
   });
@@ -258,6 +267,7 @@ describe("yieldpay", () => {
       .accountsStrict({
         user: user.publicKey,
         userAccount: userAccountPda,
+        config: configPda,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([user])
@@ -281,7 +291,12 @@ describe("yieldpay", () => {
       .accountsStrict({
         merchant: merchant.publicKey,
         merchantAccount: merchantAccountPda,
-        systemProgram: anchor.web3.SystemProgram.programId,
+        config: configPda,
+        yieldMint:yieldMint,
+        yieldMintMerchantAta:yieldMintMerchantAta,
+        tokenProgram:TOKEN_PROGRAM_ID,
+        associatedTokenProgram:ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId
       })
       .signers([merchant])
       .rpc();
