@@ -15,3 +15,4 @@ pub struct StakeAccount {
     pub last_yield_mint:u64,   
     pub bump:u8
 }
+

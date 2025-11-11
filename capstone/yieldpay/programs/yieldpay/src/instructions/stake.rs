@@ -58,12 +58,14 @@ pub struct StakeAccountContext<'info> {
     pub whitelisted_tokens: Account<'info, WhitelistToken>,
 
     #[account(
+        mut,
         seeds=[VAULT_SEED.as_ref(),mint_x.key().as_ref(),config.key().as_ref()],
         bump=vault_x.bump
     )]
     pub vault_x: Account<'info, Vault>,
 
     #[account(
+        mut,
         associated_token::mint=mint_x,
         associated_token::authority=vault_x
     )]
@@ -100,21 +102,53 @@ impl<'info> StakeAccountContext<'info> {
             YieldpayError::DepositTooSmall
         );
 
+        let is_new_account = self.stake_account.owner == Pubkey::default();
+
         self.deposit(amount)?;
-        //if it's first time deposit  -------
-        if self.stake_account.amount_staked == 0 {
-            self.updated_stake_account(amount, bumps)?;
+
+        if is_new_account {
+            msg!("Creating new StakeAccount for user {}", self.user.key());
+            self.stake_account.set_inner(StakeAccount {
+                is_active: true,
+                owner: self.user_account.key(),
+                mint: self.mint_x.key(),
+                amount_staked: amount,
+                total_yield: 0,
+                staked_at: Clock::get()?.unix_timestamp as u64,
+                last_yield_mint: 0,
+                bump: bumps.stake_account,
+            });
         } else {
             //stake amount already exist -------
             //calulate yield for prev principal
             //then deposit new pricipal ---
+            msg!(
+                "Updating existing StakeAccount for user {}",
+                self.user.key()
+            );
             let yield_amt = self.calculate_yield()?;
             if yield_amt > 0 {
                 self.mint_yield(yield_amt)?;
             }
-            self.updated_stake_account(amount, bumps)?;
+            self.stake_account.amount_staked = self
+                .stake_account
+                .amount_staked
+                .checked_add(amount)
+                .ok_or(YieldpayError::Overflow)?;
         }
 
+        self.user_account.total_amount_staked = self
+            .user_account
+            .total_amount_staked
+            .checked_add(amount)
+            .ok_or(YieldpayError::Overflow)?;
+
+        msg!(
+            "Stake successful: user={}, mint={}, amount={}",
+            self.user.key(),
+            self.mint_x.key(),
+            amount
+        );
         Ok(())
     }
     pub fn deposit(&mut self, amount: u64) -> Result<()> {
@@ -138,41 +172,11 @@ impl<'info> StakeAccountContext<'info> {
         Ok(())
     }
 
-    pub fn updated_stake_account(
-        &mut self,
-        amount: u64,
-        bumps: &StakeAccountContextBumps,
-    ) -> Result<()> {
-        if self.stake_account.amount_staked == 0 {
-            self.stake_account.set_inner(StakeAccount {
-                is_active:true,
-                owner: self.user_account.key(),
-                mint: self.mint_x.key(),
-                amount_staked: amount,
-                total_yield: 0,
-                staked_at: Clock::get()?.unix_timestamp as u64, 
-                last_yield_mint: 0,
-                bump: bumps.stake_account,
-            });
-        } else {
-            self.stake_account.amount_staked = self
-                .stake_account
-                .amount_staked
-                .checked_add(amount)
-                .ok_or(YieldpayError::Overflow)?;
-        }
-
-        self.user_account.total_amount_staked=self.user_account.total_amount_staked.checked_add(amount)
-        .ok_or(YieldpayError::Overflow)?;
-
-        Ok(())
-    }
-
     pub fn calculate_yield(&mut self) -> Result<u64> {
         let current_time = Clock::get()?.unix_timestamp as u64;
 
-        let basis_points = 10_000;
-        let sec_per_yr = 31_536_000;
+        let basis_points: u64 = 10_000;
+        let sec_per_yr: u64 = 31_536_000;
 
         let time_elapsed;
 
@@ -186,6 +190,10 @@ impl<'info> StakeAccountContext<'info> {
             return Ok(0);
         }
 
+        let denominator = basis_points
+            .checked_mul(sec_per_yr)
+            .ok_or(YieldpayError::Overflow)?;
+
         let yield_amount = self
             .stake_account
             .amount_staked
@@ -193,9 +201,8 @@ impl<'info> StakeAccountContext<'info> {
             .ok_or(YieldpayError::Overflow)?
             .checked_mul(time_elapsed)
             .ok_or(YieldpayError::Overflow)?
-            .checked_div(basis_points*sec_per_yr)
+            .checked_div(denominator)
             .ok_or(YieldpayError::Overflow)?;
-
 
         Ok(yield_amount)
     }
@@ -209,10 +216,7 @@ impl<'info> StakeAccountContext<'info> {
             authority: self.config.to_account_info(),
         };
 
-        let signer_seeds: &[&[&[u8]]] = &[&[
-            CONFIG_SEED.as_ref(),
-            &[self.config.config_bump],
-        ]];
+        let signer_seeds: &[&[&[u8]]] = &[&[CONFIG_SEED.as_ref(), &[self.config.config_bump]]];
 
         let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
 
@@ -223,8 +227,16 @@ impl<'info> StakeAccountContext<'info> {
             self.user_account.key()
         );
         self.stake_account.last_yield_mint = Clock::get()?.unix_timestamp as u64;
-        self.user_account.total_yield=self.user_account.total_yield.checked_add(yield_amt).ok_or(YieldpayError::Overflow)?;
-        self.stake_account.total_yield=self.stake_account.total_yield.checked_add(yield_amt).ok_or(YieldpayError::Overflow)?;
+        self.user_account.total_yield = self
+            .user_account
+            .total_yield
+            .checked_add(yield_amt)
+            .ok_or(YieldpayError::Overflow)?;
+        self.stake_account.total_yield = self
+            .stake_account
+            .total_yield
+            .checked_add(yield_amt)
+            .ok_or(YieldpayError::Overflow)?;
         Ok(())
     }
 }
