@@ -6,7 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-yieldpay = "212R2vTs1FXvMJFSrKkDENoH2SLMGX2gfcHg6P77mVnY"
+yieldpay = "2pkRfHqNKo5f5rnJaUTAKLkZwXTjVJgsak59Keq1k4MF"
+
+[programs.devnet]
+yieldpay = "2pkRfHqNKo5f5rnJaUTAKLkZwXTjVJgsak59Keq1k4MF"
 
 [registry]
 url = "https://api.apr.dev"

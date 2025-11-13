@@ -6,7 +6,7 @@ mod state;
 use errors::*;
 use instructions::*;
 
-declare_id!("212R2vTs1FXvMJFSrKkDENoH2SLMGX2gfcHg6P77mVnY");
+declare_id!("2pkRfHqNKo5f5rnJaUTAKLkZwXTjVJgsak59Keq1k4MF");
 
 #[program]
 pub mod yieldpay {

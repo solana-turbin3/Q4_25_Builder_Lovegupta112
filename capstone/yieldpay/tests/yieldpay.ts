@@ -10,10 +10,21 @@ import {
   mintTo,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import { assert, expect } from "chai";
+import fs from 'fs';
+import path  from "path";
 
-// Terminal colors helper
+function loadKeypair(file: string): Keypair {
+ const fullPath = path.join(__dirname, file); 
+  const secretKeyString = fs.readFileSync(fullPath, "utf8");
+  const secretKey = Uint8Array.from(JSON.parse(secretKeyString));
+  return Keypair.fromSecretKey(secretKey);
+}
+
+export const merchant_wallet = loadKeypair("./merchant-wallet.json");
+export const user_wallet = loadKeypair("./user-wallet.json");
+
 const colors = {
   reset: "\x1b[0m",
   bright: "\x1b[1m",
@@ -30,7 +41,6 @@ const colors = {
   bgBlue: "\x1b[44m",
 };
 
-// Console logging helpers
 const log = {
   header: (text: string) => {
     console.log(`\n${colors.bright}${colors.cyan}${"═".repeat(80)}${colors.reset}`);
@@ -85,8 +95,10 @@ describe("yieldpay", () => {
   const program = anchor.workspace.yieldpay as Program<Yieldpay>;
 
   const admin = provider.wallet;
-  const user = anchor.web3.Keypair.generate();
-  const merchant = anchor.web3.Keypair.generate();
+  // const user = anchor.web3.Keypair.generate();
+  // const merchant = anchor.web3.Keypair.generate();
+  const user = user_wallet; //8qW2z5rmZkxyeKGjFksZ3N1kweqC7xkLjenJg4PRoKNz
+  const merchant = merchant_wallet; //FEvo2UouoE3BGHGyTMsToCN36nQRdYe6Fj46aFd75uTJ
 
   let userAccountPda: anchor.web3.PublicKey;
   let merchantAccountPda: anchor.web3.PublicKey;
@@ -155,19 +167,19 @@ describe("yieldpay", () => {
   before(async () => {
     log.header("🔧 SETUP: Airdropping SOL & Deriving PDAs");
     
-    await provider.connection.requestAirdrop(
-      admin.publicKey,
-      10 * anchor.web3.LAMPORTS_PER_SOL
-    );
-    await provider.connection.requestAirdrop(
-      user.publicKey,
-      10 * anchor.web3.LAMPORTS_PER_SOL
-    );
-    await provider.connection.requestAirdrop(
-      merchant.publicKey,
-      10 * anchor.web3.LAMPORTS_PER_SOL
-    );
-    log.success("Airdropped 10 SOL to each account");
+    // await provider.connection.requestAirdrop(
+    //   admin.publicKey,
+    //   10 * anchor.web3.LAMPORTS_PER_SOL
+    // );
+    // await provider.connection.requestAirdrop(
+    //   user.publicKey,
+    //   10 * anchor.web3.LAMPORTS_PER_SOL
+    // );
+    // await provider.connection.requestAirdrop(
+    //   merchant.publicKey,
+    //   10 * anchor.web3.LAMPORTS_PER_SOL
+    // );
+    // log.success("Airdropped 10 SOL to each account");
 
     [configPda, configBump] = PublicKey.findProgramAddressSync(
       [Buffer.from(CONFIG_SEED)],
@@ -395,7 +407,7 @@ describe("yieldpay", () => {
   });
 
   it("User can't whitelist the token X", async () => {
-    log.header("🚫 TEST 3: User Cannot Whitelist (Negative Test)");
+    log.header("TEST 3: User Cannot Whitelist (Negative Test)");
     
     try {
       const tx = await program.methods
@@ -542,7 +554,7 @@ describe("yieldpay", () => {
   });
 
   it("Should fail if user stakes 3 tokens less than min deposit (5) ", async () => {
-    log.header("🚫 TEST 7: Stake Below Minimum (Negative Test)");
+    log.header("TEST 7: Stake Below Minimum (Negative Test)");
     
     try {
       const tx = await program.methods
@@ -685,7 +697,7 @@ describe("yieldpay", () => {
   });
 
   it("user can't claim yield if there is no stake account exist", async () => {
-    log.header("🚫 TEST 10: Cannot Claim Without Stake (Negative Test)");
+    log.header("TEST 10: Cannot Claim Without Stake (Negative Test)");
 
     log.section("Whitelisting Token Y");
     const tx2 = await program.methods
@@ -805,7 +817,7 @@ describe("yieldpay", () => {
   });
 
   it("user can't pay more than existing yield to merchant", async () => {
-    log.header("🚫 TEST 12: Cannot Overpay (Negative Test)");
+    log.header("TEST 12: Cannot Overpay (Negative Test)");
 
     const yieldMintUserAtaBefore = await getAccount(connection, yieldMintUserAta);
 
@@ -903,7 +915,7 @@ describe("yieldpay", () => {
   });
 
   it("user can't unstake more than existing stake amount", async () => {
-    log.header("🚫 TEST 14: Cannot Unstake More Than Staked (Negative Test)");
+    log.header("TEST 14: Cannot Unstake More Than Staked (Negative Test)");
 
     const userXAtaInfoBefore = await getAccount(connection, userXAta);
     const userStakeXAtaInfoBefore = await program.account.stakeAccount.fetch(stakeXAccount);
@@ -943,7 +955,7 @@ describe("yieldpay", () => {
   });
 
   it("user can't close stake X account before unstaking fully", async () => {
-    log.header("🚫 TEST 15: Cannot Close With Active Stake (Negative Test)");
+    log.header("TEST 15: Cannot Close With Active Stake (Negative Test)");
 
     const userStakeXAtaInfoBefore = await program.account.stakeAccount.fetch(stakeXAccount);
     const userBalanceBefore = await connection.getBalance(user.publicKey);
@@ -1061,6 +1073,5 @@ describe("yieldpay", () => {
     );
     log.success("Rent refund received");
     
-    log.header("✅ ALL TESTS COMPLETED SUCCESSFULLY");
   });
 });
