@@ -30,6 +30,7 @@ pub struct ClaimYieldAccountContext<'info> {
     pub user_account: Account<'info, UserAccount>,
 
     #[account(
+    mut,
     seeds=[CONFIG_SEED.as_ref()],
     bump=config.config_bump
   )]
@@ -38,7 +39,8 @@ pub struct ClaimYieldAccountContext<'info> {
     #[account(
     mut,
     seeds=[STAKE_SEED.as_ref(),config.key().as_ref(),mint_x.key().as_ref(),user_account.key().as_ref()],
-    bump=stake_account.bump
+    bump=stake_account.bump,
+    constraint = stake_account.owner == user_account.key() @ YieldpayError::UnauthorizedAccess,
 )]
     pub stake_account: Account<'info, StakeAccount>,
 
@@ -49,6 +51,7 @@ pub struct ClaimYieldAccountContext<'info> {
     pub whitelisted_tokens: Account<'info, WhitelistToken>,
 
     #[account(
+        mut,
         seeds=[YIELD_MINT_SEED.as_ref(),config.key().as_ref()],
         bump=config.yield_bump,
     )]
@@ -60,7 +63,7 @@ pub struct ClaimYieldAccountContext<'info> {
        associated_token::mint=yield_mint,
        associated_token::authority=user_account
     )]
-    pub yield_mint_ata: Account<'info, TokenAccount>,
+    pub yield_mint_user_ata: Account<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
@@ -69,17 +72,26 @@ pub struct ClaimYieldAccountContext<'info> {
 
 impl<'info> ClaimYieldAccountContext<'info> {
     pub fn claim_yield(&mut self) -> Result<()> {
-
-        require!(self.stake_account.amount_staked>0,YieldpayError::NoActiveStake);
-        require!(self.stake_account.is_active==true,YieldpayError::StakeAccountInactive);
+        require!(
+            self.stake_account.amount_staked > 0,
+            YieldpayError::NoActiveStake
+        );
+        require!(
+            self.stake_account.is_active == true,
+            YieldpayError::StakeAccountInactive
+        );
 
         let current_time = Clock::get()?.unix_timestamp as u64;
-        let time_elapsed;
-        if self.stake_account.last_yield_mint == 0 {
-            time_elapsed = current_time - self.stake_account.staked_at;
+
+        let time_elapsed = if self.stake_account.last_yield_mint == 0 {
+            current_time
+                .checked_sub(self.stake_account.staked_at)
+                .ok_or(YieldpayError::Overflow)?
         } else {
-            time_elapsed = current_time - self.stake_account.last_yield_mint;
-        }
+            current_time
+                .checked_sub(self.stake_account.last_yield_mint)
+                .ok_or(YieldpayError::Overflow)?
+        };
 
         require!(
             self.config.yield_min_period < time_elapsed,
@@ -95,7 +107,7 @@ impl<'info> ClaimYieldAccountContext<'info> {
 
     pub fn calculate_yield(&mut self, time_elapsed: u64) -> Result<u64> {
         let basis_points = 10_000;
-        let sec_per_yr = 31_536_000;
+        let sec_per_yr =  self.config.yield_period_base;
 
         let yield_amount = self
             .stake_account
@@ -115,7 +127,7 @@ impl<'info> ClaimYieldAccountContext<'info> {
 
         let cpi_accounts = MintTo {
             mint: self.yield_mint.to_account_info(),
-            to: self.yield_mint_ata.to_account_info(),
+            to: self.yield_mint_user_ata.to_account_info(),
             authority: self.config.to_account_info(),
         };
 
@@ -130,7 +142,7 @@ impl<'info> ClaimYieldAccountContext<'info> {
             self.user_account.key()
         );
         self.stake_account.last_yield_mint = Clock::get()?.unix_timestamp as u64;
-        
+
         self.user_account.total_yield = self
             .user_account
             .total_yield

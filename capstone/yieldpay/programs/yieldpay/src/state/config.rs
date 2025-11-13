@@ -16,6 +16,7 @@ pub struct Config {
     pub apy_bps: u64,
     pub config_bump: u8,
     pub yield_bump: u8,
+    pub yield_period_base:u64,
 }
 
 

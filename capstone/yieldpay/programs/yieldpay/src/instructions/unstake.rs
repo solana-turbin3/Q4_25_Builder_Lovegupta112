@@ -8,7 +8,7 @@ use crate::{
     errors::YieldpayError,
     state::{
         Config, StakeAccount, UserAccount, Vault, WhitelistToken, CONFIG_SEED, STAKE_SEED,
-        USER_SEED, VAULT_SEED, WHITELIST_SEED, YIELD_MINT_SEED,
+        USER_SEED, VAULT_SEED, WHITELIST_SEED,
     },
 };
 
@@ -56,25 +56,14 @@ pub struct UnstakeContext<'info> {
     pub whitelisted_tokens: Account<'info, WhitelistToken>,
 
     #[account(
-        seeds=[YIELD_MINT_SEED.as_ref(),config.key().as_ref()],
-        bump=config.yield_bump,
-    )]
-    pub yield_mint: Account<'info, Mint>,
-
-    #[account(
         mut,
-       associated_token::mint=yield_mint,
-       associated_token::authority=user_account
-    )]
-    pub yield_mint_user_ata: Account<'info, TokenAccount>,
-
-    #[account(
         seeds=[VAULT_SEED.as_ref(),mint_x.key().as_ref(),config.key().as_ref()],
         bump=vault_x.bump
     )]
     pub vault_x: Account<'info, Vault>,
 
     #[account(
+        mut,
         associated_token::mint=mint_x,
         associated_token::authority=vault_x
     )]
@@ -87,38 +76,66 @@ pub struct UnstakeContext<'info> {
 
 impl<'info> UnstakeContext<'info> {
     pub fn unstake(&mut self, amount: u64) -> Result<()> {
+        require!(
+            amount <= self.stake_account.amount_staked,
+            YieldpayError::InvalidAmount
+        );
+        require!(amount > 0, YieldpayError::InvalidAmount);
 
-        require!(amount<=self.stake_account.amount_staked,YieldpayError::InvalidAmount);
-        require!(amount>0,YieldpayError::InvalidAmount);
+        require!(
+            self.stake_account.is_active,
+            YieldpayError::StakeAccountInactive
+        );
+        require!(
+            self.stake_account.amount_staked > 0,
+            YieldpayError::NoActiveStake
+        );
 
-        require!(self.stake_account.is_active==true,YieldpayError::StakeAccountInactive);
-        require!(self.stake_account.amount_staked>0,YieldpayError::NoActiveStake);
-
-        if amount == self.stake_account.amount_staked {
-            self.stake_account.last_yield_mint=0;
-            self.stake_account.is_active=false;
+          if amount == self.stake_account.amount_staked {
+            self.stake_account.last_yield_mint = 0;
+            self.stake_account.is_active = false;
+            msg!("Stake account fully unstaked and deactivated");
         }
 
-        let program_id=self.token_program.to_account_info();
+        let program_id = self.token_program.to_account_info();
 
-        let cpi_accounts=Transfer{
-            from:self.vault_x_ata.to_account_info(),
-            to:self.user_x_ata.to_account_info(),
-            authority:self.vault_x.to_account_info()
+        let cpi_accounts = Transfer {
+            from: self.vault_x_ata.to_account_info(),
+            to: self.user_x_ata.to_account_info(),
+            authority: self.vault_x.to_account_info(),
         };
 
-        let signer_seeds: &[&[&[u8]]]=&[&[VAULT_SEED.as_ref(),self.mint_x.to_account_info().key.as_ref(),self.config.to_account_info().key.as_ref(),&[self.vault_x.bump]]];
+        let signer_seeds: &[&[&[u8]]] = &[&[
+            VAULT_SEED.as_ref(),
+            self.mint_x.to_account_info().key.as_ref(),
+            self.config.to_account_info().key.as_ref(),
+            &[self.vault_x.bump],
+        ]];
 
-        let cpi_ctx=CpiContext::new_with_signer(program_id, cpi_accounts, signer_seeds);
+        let cpi_ctx = CpiContext::new_with_signer(program_id, cpi_accounts, signer_seeds);
+
+        transfer(cpi_ctx, amount)?;
+
+        self.stake_account.amount_staked = self
+            .stake_account
+            .amount_staked
+            .checked_sub(amount)
+            .ok_or(YieldpayError::Underflow)?;
+
+        self.user_account.total_amount_staked = self
+            .user_account
+            .total_amount_staked
+            .checked_sub(amount)
+            .ok_or(YieldpayError::Underflow)?;
+
+        self.vault_x.total_amount_staked = self
+            .vault_x
+            .total_amount_staked
+            .checked_sub(amount)
+            .ok_or(YieldpayError::Underflow)?;
 
 
-        transfer(cpi_ctx,amount)?;
-
-        self.stake_account.amount_staked=self.stake_account.amount_staked.checked_sub(amount)
-        .ok_or(YieldpayError::Underflow)?;
-
-        self.user_account.total_amount_staked=self.user_account.total_amount_staked.checked_sub(amount)
-        .ok_or(YieldpayError::Underflow)?;
+        msg!("Unstaked {} tokens for user: {}", amount, self.user.key());
 
         Ok(())
     }

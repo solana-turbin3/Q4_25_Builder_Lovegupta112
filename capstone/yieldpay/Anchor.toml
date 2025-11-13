@@ -12,8 +12,9 @@ yieldpay = "212R2vTs1FXvMJFSrKkDENoH2SLMGX2gfcHg6P77mVnY"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "https://turbine-solanad-4cde.devnet.rpcpool.com/9a9da9cf-6db1-47dc-839a-55aca5c9c80a"
 wallet = "~/.config/solana/id.json"
+
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 \"tests/**/*.ts\""

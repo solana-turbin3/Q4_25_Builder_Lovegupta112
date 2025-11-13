@@ -13,6 +13,7 @@ pub struct InitializeConfigArgs {
     pub total_merchants: u64,
     pub yield_min_period: u64,
     pub apy_bps: u64,
+    pub yield_period_base:u64
 }
 
 #[derive(Accounts)]
@@ -57,6 +58,7 @@ impl<'info> InitializeConfigContext<'info> {
             total_merchants: args.total_merchants,
             yield_min_period: args.yield_min_period,
             apy_bps: args.apy_bps,
+            yield_period_base:args.yield_period_base,
             config_bump: bumps.config,
             yield_bump:bumps.yield_mint,
             yield_mint:self.yield_mint.key(),

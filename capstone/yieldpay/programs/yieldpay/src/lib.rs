@@ -29,16 +29,22 @@ pub mod yieldpay {
         ctx.accounts.initialize_user(&ctx.bumps)
     }
 
-    pub fn onboard_merchant(ctx: Context<InitializeMerchantContext>,business_name: String,) -> Result<()> {
+    pub fn onboard_merchant(
+        ctx: Context<InitializeMerchantContext>,
+        business_name: String,
+    ) -> Result<()> {
         ctx.accounts.initialize_merchant(business_name, &ctx.bumps)
     }
 
     //staking or deposit token --------
 
-    pub fn stake(ctx: Context<StakeAccountContext>, amount: u64) -> Result<()> {
-        ctx.accounts.stake(amount, &ctx.bumps)
+    pub fn initialize_stake(ctx: Context<InitializeStakeContext>, amount: u64) -> Result<()> {
+        ctx.accounts.initialize_stake(amount, &ctx.bumps)
     }
 
+    pub fn add_stake(ctx: Context<AddStakeContext>, amount: u64) -> Result<()> {
+        ctx.accounts.add_stake(amount)
+    }
     pub fn claim_yield(ctx: Context<ClaimYieldAccountContext>) -> Result<()> {
         ctx.accounts.claim_yield()
     }
@@ -47,11 +53,10 @@ pub mod yieldpay {
         ctx.accounts.pay_merchant(amount)
     }
 
-    pub fn unstake(ctx:Context<UnstakeContext>,amount:u64)->Result<()>{
+    pub fn unstake(ctx: Context<UnstakeContext>, amount: u64) -> Result<()> {
         ctx.accounts.unstake(amount)
     }
-    pub fn close_stake_account(ctx:Context<CloseStakeAccountContext>)->Result<()>{
+    pub fn close_stake_account(ctx: Context<CloseStakeAccountContext>) -> Result<()> {
         ctx.accounts.close_stake_account()
     }
-
 }

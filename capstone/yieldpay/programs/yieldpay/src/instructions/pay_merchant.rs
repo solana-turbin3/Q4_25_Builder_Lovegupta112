@@ -48,7 +48,7 @@ pub struct PayMerchantContext<'info> {
 
     #[account(
     mut,
-    seeds=[STAKE_SEED.as_ref(),config.key().as_ref(),mint_x.key().as_ref(),user.key().as_ref()],
+    seeds=[STAKE_SEED.as_ref(),config.key().as_ref(),mint_x.key().as_ref(),user_account.key().as_ref()],
     bump=stake_account.bump
 )]
     pub stake_account: Account<'info, StakeAccount>,

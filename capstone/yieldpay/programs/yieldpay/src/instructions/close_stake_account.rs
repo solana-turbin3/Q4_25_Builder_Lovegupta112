@@ -1,14 +1,14 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{transfer, Mint, Token, TokenAccount, Transfer},
+    token::{ Mint, Token, TokenAccount},
 };
 
 use crate::{
     errors::YieldpayError,
     state::{
-        Config, StakeAccount, UserAccount, Vault, WhitelistToken, CONFIG_SEED, STAKE_SEED,
-        USER_SEED, VAULT_SEED, WHITELIST_SEED, YIELD_MINT_SEED,
+        Config, StakeAccount, UserAccount, WhitelistToken, CONFIG_SEED, STAKE_SEED,
+        USER_SEED, WHITELIST_SEED,
     },
 };
 
@@ -56,44 +56,23 @@ pub struct CloseStakeAccountContext<'info> {
     )]
     pub whitelisted_tokens: Account<'info, WhitelistToken>,
 
-    #[account(
-        seeds=[YIELD_MINT_SEED.as_ref(),config.key().as_ref()],
-        bump=config.yield_bump,
-    )]
-    pub yield_mint: Account<'info, Mint>,
-
-    #[account(
-        mut,
-       associated_token::mint=yield_mint,
-       associated_token::authority=user_account
-    )]
-    pub yield_mint_user_ata: Account<'info, TokenAccount>,
-
-    #[account(
-        seeds=[VAULT_SEED.as_ref(),mint_x.key().as_ref(),config.key().as_ref()],
-        bump=vault_x.bump
-    )]
-    pub vault_x: Account<'info, Vault>,
-
-    #[account(
-        associated_token::mint=mint_x,
-        associated_token::authority=vault_x
-    )]
-    pub vault_x_ata: Account<'info, TokenAccount>,
-
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
-impl <'info>  CloseStakeAccountContext <'info>{
+impl<'info> CloseStakeAccountContext<'info> {
+    pub fn close_stake_account(&mut self) -> Result<()> {
+        require!(
+            self.stake_account.amount_staked == 0,
+            YieldpayError::MustUnstakeFirst
+        );
+        require!(
+            self.stake_account.is_active == false,
+            YieldpayError::StakeAccountStillActive
+        );
 
-    pub fn close_stake_account(&mut self)->Result<()>{
-       
-        require!(self.stake_account.amount_staked==0,YieldpayError::MustUnstakeFirst);
-        require!(self.stake_account.is_active==false,YieldpayError::StakeAccountStillActive);
-    
-         self.stake_account.close(self.user.to_account_info())?;
+        self.stake_account.close(self.user.to_account_info())?;
         Ok(())
     }
 }
