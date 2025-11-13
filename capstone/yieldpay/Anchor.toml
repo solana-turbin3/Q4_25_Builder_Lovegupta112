@@ -12,7 +12,7 @@ yieldpay = "212R2vTs1FXvMJFSrKkDENoH2SLMGX2gfcHg6P77mVnY"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "https://turbine-solanad-4cde.devnet.rpcpool.com/9a9da9cf-6db1-47dc-839a-55aca5c9c80a"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 
