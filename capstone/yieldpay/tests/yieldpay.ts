@@ -95,6 +95,7 @@ describe("yieldpay", () => {
   const program = anchor.workspace.yieldpay as Program<Yieldpay>;
 
   const admin = provider.wallet;
+  //for devnet , hardcoding wallet ---
   // const user = anchor.web3.Keypair.generate();
   // const merchant = anchor.web3.Keypair.generate();
   const user = user_wallet; //8qW2z5rmZkxyeKGjFksZ3N1kweqC7xkLjenJg4PRoKNz
@@ -165,7 +166,7 @@ describe("yieldpay", () => {
   log.info("Yield Period Base (seconds)", yield_period_base.toString());
 
   before(async () => {
-    log.header("🔧 SETUP: Airdropping SOL & Deriving PDAs");
+    log.header("SETUP: Airdropping SOL & Deriving PDAs");
     
     // await provider.connection.requestAirdrop(
     //   admin.publicKey,
