@@ -242,7 +242,10 @@ use crate::{
 //     }
 // }
 
-// ==================== INITIALIZE STAKE ====================
+//-----converting one instruction into two instructions 
+//1. initialize stake
+//2. add stake 
+
 #[derive(Accounts)]
 pub struct InitializeStakeContext<'info> {
     #[account(mut)]
@@ -308,7 +311,6 @@ pub struct InitializeStakeContext<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
-// ==================== ADD STAKE ====================
 #[derive(Accounts)]
 pub struct AddStakeContext<'info> {
     #[account(mut)]
@@ -384,7 +386,6 @@ pub struct AddStakeContext<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
-// ==================== IMPLEMENTATIONS ====================
 
 impl<'info> InitializeStakeContext<'info> {
     pub fn initialize_stake(&mut self, amount: u64, bumps: &InitializeStakeContextBumps) -> Result<()> {
