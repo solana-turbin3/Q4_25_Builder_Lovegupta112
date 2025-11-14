@@ -35,8 +35,6 @@ impl<'info> InitializeUserContext<'info> {
             created_at:Clock::get()?.unix_timestamp as u64
         });
 
-        //todo: increase user inconfig -----also check in tests state of config
-
         self.config.total_users += 1;
         msg!("User {} onboarderd successfully.", self.user.key());
 
