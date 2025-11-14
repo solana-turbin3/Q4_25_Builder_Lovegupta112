@@ -22,7 +22,7 @@ YieldPay is an innovative DeFi protocol that combines staking, yield generation,
 
 Program ID: `2pkRfHqNKo5f5rnJaUTAKLkZwXTjVJgsak59Keq1k4MF`
 
-[View on Solana Explorer](#https://explorer.solana.com/address/2pkRfHqNKo5f5rnJaUTAKLkZwXTjVJgsak59Keq1k4MF?cluster=devnet)
+[View on Solana Explorer](https://explorer.solana.com/address/2pkRfHqNKo5f5rnJaUTAKLkZwXTjVJgsak59Keq1k4MF?cluster=devnet)
 
 ## ✨ Features
 
