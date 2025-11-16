@@ -338,18 +338,11 @@ Where:
 
 ## 👥 Team
 
-* **Your Name** - Core Developer - [@lovegupta](https://github.com/lovegupta112)
+* **Lovegupta** - Core Developer - [@lovegupta](https://github.com/lovegupta112)
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🔗 Links
-
-* [Documentation](#)
-* [Website](#)
-* [Twitter](#)
-* [Discord](#)
 
 ---
 
