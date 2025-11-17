@@ -24,6 +24,10 @@ Program ID: `2pkRfHqNKo5f5rnJaUTAKLkZwXTjVJgsak59Keq1k4MF`
 
 [View on Solana Explorer](https://explorer.solana.com/address/2pkRfHqNKo5f5rnJaUTAKLkZwXTjVJgsak59Keq1k4MF?cluster=devnet)
 
+
+<img width="1113" height="1781" alt="image" src="https://github.com/user-attachments/assets/ee9bac87-3e68-4c14-b680-2763bac95635" />
+
+
 ## ✨ Features
 
 ### Core Functionality
@@ -193,6 +197,7 @@ anchor test tests/yieldpay.ts
 * ✅ Authorization checks
 * ✅ Insufficient funds handling
 * ✅ Edge cases and error conditions
+
 
 ## 📖 Usage Examples
 
